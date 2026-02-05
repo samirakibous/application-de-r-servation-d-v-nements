@@ -5,7 +5,7 @@ import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 
 import { User } from 'src/user/entities/user.entity';
-import { Role } from '../../../shared/enums/role.enum';
+import { Role } from '@shared/enums/role.enum';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { use } from 'passport';

@@ -42,4 +42,8 @@ export class EventService {
   async remove(id: string) {
     return await this.eventModel.findByIdAndDelete(id).exec();
   }
+
+  async getPublishedEvents(status: EventStatus = EventStatus.PUBLISHED) {
+    return await this.eventModel.find({ status }).exec();
+  }
 }
