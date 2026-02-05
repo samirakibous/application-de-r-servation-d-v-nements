@@ -1,4 +1,4 @@
-import { Role } from '@shared/enums/role.enum';
+import { Role } from '../../common/enums/role.enum';
 import {
   IsEmail,
   IsEnum,
