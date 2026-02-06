@@ -6,14 +6,18 @@ import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AuthModule } from './auth/auth.module';
 import { EventModule } from './event/event.module';
+import { ReservationModule } from './reservation/reservation.module';
 
 @Module({
-  imports: [ConfigModule.forRoot({ isGlobal: true }),
+  imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
     UserModule,
-     AuthModule,
-  MongooseModule.forRoot(process.env.MONGODB_URI || ''),
-  EventModule],
+    AuthModule,
+    MongooseModule.forRoot(process.env.MONGODB_URI || ''),
+    EventModule,
+    ReservationModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule { }
+export class AppModule {}
