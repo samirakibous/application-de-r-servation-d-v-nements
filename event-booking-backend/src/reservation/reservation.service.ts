@@ -96,40 +96,81 @@ export class ReservationService {
     }
     return myReservations;
   }
- async cancelReservation(
-  reservationId: Types.ObjectId,
-  userId: Types.ObjectId,
-  userRole: Role,
-): Promise<Reservation> {
-  const reservation = await this.reservationModel.findOne({
-    _id: reservationId,
-    deletedAt: null,
-  });
+  async cancelReservation(
+    reservationId: Types.ObjectId,
+    userId: Types.ObjectId,
+  ): Promise<Reservation> {
+    const reservation = await this.reservationModel.findOne({
+      _id: reservationId,
+      deletedAt: null,
+    });
 
-  if (!reservation) {
-    throw new NotFoundException('Reservation not found');
+    if (!reservation) {
+      throw new NotFoundException('Reservation not found');
+    }
+
+    if (reservation.user.toString() !== userId.toString()) {
+      throw new ForbiddenException('You do not have permission to cancel this reservation');
+    }
+
+    if (reservation.status !== ReservationStatus.PENDING) {
+      throw new BadRequestException('Only pending reservations can be canceled');
+    }
+
+    const event = await this.eventModel.findById(reservation.event);
+    if (event) {
+      event.availableSeats += reservation.numberOfSeats;
+      await event.save();
+    }
+
+    reservation.status = ReservationStatus.CANCELED;
+    reservation.canceledAt = new Date();
+    await reservation.save();
+
+    return reservation;
   }
 
-  if (userRole !== Role.ADMIN && reservation.user.toString() !== userId.toString()) {
-    throw new ForbiddenException('You do not have permission to cancel this reservation');
+  async updateReservationStatus(
+    reservationId: Types.ObjectId,
+    updateReservationDto: UpdateReservationDto,
+    userRole: Role,
+  ): Promise<Reservation> {
+    if (userRole !== Role.ADMIN) {
+      throw new ForbiddenException('Only admin can update reservation status');
+    }
+
+    const reservation = await this.reservationModel.findOne({
+      _id: reservationId,
+      deletedAt: null,
+    });
+
+    if (!reservation) {
+      throw new NotFoundException('Reservation not found');
+    }
+
+    reservation.status = updateReservationDto.status;
+    await reservation.save();
+
+    const event = await this.eventModel.findById(reservation.event);
+    if (event) {
+      if (updateReservationDto.status === ReservationStatus.CANCELED) {
+        event.availableSeats += reservation.numberOfSeats;
+      } else if (updateReservationDto.status === ReservationStatus.CONFIRMED) {
+        if (event.availableSeats < reservation.numberOfSeats) {
+          throw new BadRequestException('Not enough available seats to confirm this reservation');
+        }
+        event.availableSeats -= reservation.numberOfSeats;
+      }
+      await event.save();
+    }
+
+    await reservation.populate([
+      { path: 'user', select: 'email firstName lastName' },
+      { path: 'event', select: 'title date time location status availableSeats capacity' },
+    ]);
+
+    return reservation;
   }
-
-  if (reservation.status !== ReservationStatus.PENDING && userRole !== Role.ADMIN) {
-    throw new BadRequestException('Only pending reservations can be canceled');
-  }
-
-  const event = await this.eventModel.findById(reservation.event);
-  if (event) {
-    event.availableSeats += reservation.numberOfSeats;
-    await event.save();
-  }
-
-  reservation.status = ReservationStatus.CANCELED;
-  reservation.canceledAt = new Date();
-  await reservation.save();
-
-  return reservation;
-}
 
 }
 

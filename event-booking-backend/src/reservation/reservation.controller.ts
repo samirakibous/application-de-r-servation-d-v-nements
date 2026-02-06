@@ -56,7 +56,6 @@ export class ReservationController {
      return this.reservationService.cancelReservation(
     new Types.ObjectId(id), 
     new Types.ObjectId(req.user._id), 
-    req.user.role,
   );
   }
 }
