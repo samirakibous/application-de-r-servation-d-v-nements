@@ -14,7 +14,8 @@ import { UpdateEventDto } from './dto/update-event.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/role.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
-import {Role} from '../../../shared/enums/role.enum';
+import { Role } from '../common/enums/role.enum';
+import { Types } from 'mongoose';
 
 @Controller('events')
 export class EventController {
@@ -32,6 +33,11 @@ export class EventController {
     return this.eventService.findAll();
   }
 
+   @Get('published')
+  getPublishedEvents() {
+    return this.eventService.getPublishedEvents();
+  }
+  
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.eventService.findOne(id);
@@ -41,13 +47,15 @@ export class EventController {
   @Roles(Role.ADMIN)
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateEventDto: UpdateEventDto) {
-    return this.eventService.update(id, updateEventDto);
+    return this.eventService.update(new Types.ObjectId(id), updateEventDto);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.eventService.remove(id);
+    return this.eventService.remove(new Types.ObjectId(id));
   }
+
+ 
 }

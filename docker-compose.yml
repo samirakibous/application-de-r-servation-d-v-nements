@@ -1,0 +1,46 @@
+services:
+  mongo:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    environment:
+      - MONGO_INITDB_DATABASE=event-booking
+
+  backend:
+    build:
+      context: ./event-booking-backend
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3001"
+    environment:
+      - MONGODB_URI=mongodb://mongo:27017/event-booking
+      - JWT_SECRET=supersecretkey
+      - JWT_REFRESH_SECRET=supersecretrefreshkey
+      - PORT=3001
+    depends_on:
+      - mongo
+    volumes:
+      - ./event-booking-backend:/app
+      - /app/node_modules
+
+  frontend:
+    build:
+      context: ./event-booking-frontend
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: http://localhost:3001
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:3001
+    depends_on:
+      - backend
+    volumes:
+      - ./event-booking-frontend:/app
+      - /app/node_modules
+      - /app/.next
+
+volumes:
+  mongo_data:
