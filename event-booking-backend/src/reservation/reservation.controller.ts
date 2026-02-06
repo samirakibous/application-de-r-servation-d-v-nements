@@ -16,6 +16,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/role.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '../common/enums/role.enum';
+import { Types } from 'mongoose';
 
 @Controller('reservations')
 @UseGuards(JwtAuthGuard)
@@ -43,4 +44,8 @@ export class ReservationController {
     );
   }
 
+  @Get(':id/me')
+  myReservations(@Request() req: any) {
+    return this.reservationService.myReservations(req.user._id.toString());
+}
 }
