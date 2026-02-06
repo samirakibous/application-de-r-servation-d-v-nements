@@ -48,7 +48,7 @@ export class ReservationService {
     const existingReservation = await this.reservationModel.findOne({
       user: userId,
       event: createReservationDto.eventId,
-      status: { $ne: ReservationStatus.CANCELLED },
+      status: { $ne: ReservationStatus.CANCELED },
       deletedAt: null,
     });
 
@@ -70,4 +70,19 @@ export class ReservationService {
 
     return await reservation.save();
   }
+
+  async findAll(userId: string, userRole: Role): Promise<Reservation[]> {
+    const query =
+      userRole === Role.ADMIN
+        ? { deletedAt: null }
+        : { user: userId, deletedAt: null };
+
+    return await this.reservationModel
+      .find(query)
+      .populate('user', 'email firstName lastName')
+      .populate('event', 'title date time location')
+      .exec();
+  }
+
+
 }
