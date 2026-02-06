@@ -58,4 +58,19 @@ export class ReservationController {
     new Types.ObjectId(req.user._id), 
   );
   }
+
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
+  @Patch(':id')
+  updateReservationStatus(
+    @Param('id') id: string,
+    @Body() updateReservationDto: UpdateReservationDto,
+    @Request() req: any,
+  ) {
+    return this.reservationService.updateReservationStatus(
+      new Types.ObjectId(id),
+      updateReservationDto,
+      req.user.role,
+    );
+  }
 }
