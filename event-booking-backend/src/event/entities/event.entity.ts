@@ -41,5 +41,7 @@ export class Event {
     default: EventStatus.DRAFT,
   })
   status: EventStatus;
+  @Prop({ default: null })
+deletedAt?: Date;
 }
 export const EventSchema = SchemaFactory.createForClass(Event);
