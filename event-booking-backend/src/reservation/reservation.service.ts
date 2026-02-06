@@ -22,7 +22,7 @@ export class ReservationService {
     @InjectModel(Reservation.name)
     private reservationModel: Model<ReservationDocument>,
     @InjectModel(Event.name) private eventModel: Model<Event>,
-  ) {}
+  ) { }
 
   async create(
     createReservationDto: CreateReservationDto,
@@ -91,10 +91,45 @@ export class ReservationService {
       .populate('event', 'title date time location status availableSeats capacity ')
       .exec();
 
-      if(myReservations.length === 0) {
-        throw new NotFoundException('you are not the owner of any reservations');
-      }
+    if (myReservations.length === 0) {
+      throw new NotFoundException('you are not the owner of any reservations');
+    }
     return myReservations;
   }
+ async cancelReservation(
+  reservationId: Types.ObjectId,
+  userId: Types.ObjectId,
+  userRole: Role,
+): Promise<Reservation> {
+  const reservation = await this.reservationModel.findOne({
+    _id: reservationId,
+    deletedAt: null,
+  });
+
+  if (!reservation) {
+    throw new NotFoundException('Reservation not found');
+  }
+
+  if (userRole !== Role.ADMIN && reservation.user.toString() !== userId.toString()) {
+    throw new ForbiddenException('You do not have permission to cancel this reservation');
+  }
+
+  if (reservation.status !== ReservationStatus.PENDING && userRole !== Role.ADMIN) {
+    throw new BadRequestException('Only pending reservations can be canceled');
+  }
+
+  const event = await this.eventModel.findById(reservation.event);
+  if (event) {
+    event.availableSeats += reservation.numberOfSeats;
+    await event.save();
+  }
+
+  reservation.status = ReservationStatus.CANCELED;
+  reservation.canceledAt = new Date();
+  await reservation.save();
+
+  return reservation;
+}
 
 }
+
