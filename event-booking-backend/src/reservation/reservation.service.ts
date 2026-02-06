@@ -85,9 +85,10 @@ export class ReservationService {
   }
 
   async myReservations(userId: Types.ObjectId): Promise<Reservation[]> {
+
     const myReservations = await this.reservationModel
       .find({ user: userId, deletedAt: null })
-      .populate('event', 'title date time location')
+      .populate('event', 'title date time location status availableSeats capacity ')
       .exec();
 
       if(myReservations.length === 0) {
