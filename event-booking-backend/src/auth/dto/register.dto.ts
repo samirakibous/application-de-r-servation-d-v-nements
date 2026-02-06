@@ -27,6 +27,6 @@ export class RegisterDto {
   lastName: string;
 
   @IsOptional()
-  @IsEnum(Role, { message: 'role must be either student or teacher' })
+  @IsEnum(Role, { message: 'role must be admin or participant' })
   role?: Role;
 }
