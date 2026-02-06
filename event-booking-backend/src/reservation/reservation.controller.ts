@@ -33,4 +33,14 @@ export class ReservationController {
     );
   }
 
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
+  @Get()
+  findAll(@Request() req: any) {
+    return this.reservationService.findAll(
+      req.user._id.toString(),
+      req.user.role,
+    );
+  }
+
 }
