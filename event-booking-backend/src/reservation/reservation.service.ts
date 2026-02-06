@@ -71,7 +71,7 @@ export class ReservationService {
     return await reservation.save();
   }
 
-  async findAll(userId: string, userRole: Role): Promise<Reservation[]> {
+  async findAll(userId: Types.ObjectId, userRole: Role): Promise<Reservation[]> {
     const query =
       userRole === Role.ADMIN
         ? { deletedAt: null }
