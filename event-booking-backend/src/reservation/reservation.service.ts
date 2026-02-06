@@ -84,5 +84,16 @@ export class ReservationService {
       .exec();
   }
 
+  async myReservations(userId: Types.ObjectId): Promise<Reservation[]> {
+    const myReservations = await this.reservationModel
+      .find({ user: userId, deletedAt: null })
+      .populate('event', 'title date time location')
+      .exec();
+
+      if(myReservations.length === 0) {
+        throw new NotFoundException('you are not the owner of any reservations');
+      }
+    return myReservations;
+  }
 
 }
