@@ -48,4 +48,15 @@ export class ReservationController {
   myReservations(@Request() req: any) {
     return this.reservationService.myReservations(req.user._id.toString());
 }
+  @Patch(':id/cancel')
+  cancelReservation(
+    @Param('id') id: string,
+    @Request() req: any,
+  ) {
+     return this.reservationService.cancelReservation(
+    new Types.ObjectId(id), 
+    new Types.ObjectId(req.user._id), 
+    req.user.role,
+  );
+  }
 }
